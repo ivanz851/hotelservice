@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  postgres-booking:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: booking_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5431:5432"
+
+  postgres-hotel:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: hotel_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  booking-svc:
+    build:
+      context: .
+      dockerfile: cmd/booking-svc/Dockerfile
+    ports:
+      - "50051:50051"
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://user:password@postgres-booking:5432/booking_db?sslmode=disable
+
+  hotel-svc:
+    build:
+      context: .
+      dockerfile: cmd/hotel-svc/Dockerfile
+    ports:
+      - "50052:50052"
+    environment:
+      - DATABASE_URL=postgres://user:password@postgres-hotel:5432/hotel_db?sslmode=disable
