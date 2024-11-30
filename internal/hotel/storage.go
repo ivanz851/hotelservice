@@ -11,9 +11,13 @@ type Storage struct {
 }
 
 type Hotel struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-	City string `json:"city"`
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	City     string `json:"city"`
+	Hotelier int    `json:"hotelier"`
+	Rating   int    `json:"rating"`
+	Country  string `json:"country"`
+	Address  string `json:"address"`
 }
 
 func NewStorage(conn string) *Storage {
@@ -44,20 +48,20 @@ func (s *Storage) GetHotels() ([]Hotel, error) {
 
 func (s *Storage) AddHotel(hotel Hotel) error {
 	_, err := s.db.Exec(
-		"INSERT INTO hotels (
+		`INSERT INTO hotels (
 			ID, 
 			Name,
 			Hotelier, 
 			Rating, 
 			Country, 
 			Address
-		) VALUES ($1, $2, $3, $4, $5, $6)",
-	hotel.ID,
-	hotel.Name,
-	hotel.Hotelier,
-	hotel.Rating,
-	hotel.Country,
-	hotel.Address
-)
+		) VALUES ($1, $2, $3, $4, $5, $6)`,
+		hotel.ID,
+		hotel.Name,
+		hotel.Hotelier,
+		hotel.Rating,
+		hotel.Country,
+		hotel.Address,
+	)
 	return err
 }
