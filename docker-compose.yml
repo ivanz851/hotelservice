@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 
 services:
   postgres-booking:
@@ -38,17 +38,27 @@ services:
     environment:
       - DATABASE_URL=${HOTEL_DB_URL}
 
+  notification-svc:
+    build:
+      context: .
+      dockerfile: cmd/notification-svc/Dockerfile
+    restart: always
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BROKER=kafka:9092
+
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:v2.43.0
     container_name: prometheus
-    command:
-      - "-config.file=/etc/prometheus/prometheus.yml"
     ports:
       - "${PROM_PORT}:9090"
     restart: unless-stopped
     volumes:
       - ./prometheus:/etc/prometheus
       - prom_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
 
   grafana:
     image: grafana/grafana
@@ -57,9 +67,9 @@ services:
       - "${GRAFANA_PORT}:3000"
     restart: unless-stopped
     environment:
-      - GF_SECURITY_ADMIN_USER=${AMIN_USER} 
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER} 
       - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD}
-    valumes:
+    volumes:
       - ./grafana:/etc/grafana/provisioning/datasources
 
   jaeger-all-in-one:
@@ -70,3 +80,27 @@ services:
       - "14268"
       - "14250"
 
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+  kafka:
+    depends_on:
+      - zookeeper
+    container_name: kafka
+    restart: always
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,OUTSIDE://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+    
+volumes:
+  prom_data:
