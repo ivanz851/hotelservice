@@ -1,39 +1,72 @@
-version: "3.8"
+version: "3.9"
 
 services:
   postgres-booking:
     image: postgres:13
     environment:
-      POSTGRES_DB: booking_db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${DB_BOOKING_NAME}
+      POSTGRES_USER: ${DB_BOOKING_USER}
+      POSTGRES_PASSWORD: ${DB_BOOKING_PASSWORD}
     ports:
-      - "5431:5432"
+      - "${DB_BOOKING_PORT}:5431"
 
   postgres-hotel:
     image: postgres:13
     environment:
-      POSTGRES_DB: hotel_db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${DB_HOTEL_NAME}
+      POSTGRES_USER: ${DB_HOTEL_USER}
+      POSTGRES_PASSWORD: ${DB_HOTEL_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${DB_HOTEL_PORT}:5432"
 
   booking-svc:
     build:
       context: .
       dockerfile: cmd/booking-svc/Dockerfile
     ports:
-      - "50051:50051"
-      - "8080:8080"
+      - "${BOOKING_PORT}:50051"
+      - "${BOOKING_CONN_PORT}:8080"
     environment:
-      - DATABASE_URL=postgres://user:password@postgres-booking:5432/booking_db?sslmode=disable
+      - DATABASE_URL=${BOOKING_DB_URL}
 
   hotel-svc:
     build:
       context: .
       dockerfile: cmd/hotel-svc/Dockerfile
     ports:
-      - "50052:50052"
+      - "${HOTEL_PORT}:50052"
     environment:
-      - DATABASE_URL=postgres://user:password@postgres-hotel:5432/hotel_db?sslmode=disable
+      - DATABASE_URL=${HOTEL_DB_URL}
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - "-config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "${PROM_PORT}:9090"
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom_data:/prometheus
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=${AMIN_USER} 
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    valumes:
+      - ./grafana:/etc/grafana/provisioning/datasources
+
+  jaeger-all-in-one:
+    image: jaegertracing/all-in-one:latest
+    restart: always
+    ports:
+      - "16686:16686"
+      - "14268"
+      - "14250"
+
