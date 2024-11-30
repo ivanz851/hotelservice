@@ -25,7 +25,7 @@ func NewStorage(conn string) *Storage {
 }
 
 func (s *Storage) GetHotels() ([]Hotel, error) {
-	rows, err := s.db.Query("SELECT id, name, city FROM hotels")
+	rows, err := s.db.Query("SELECT ID, Name, Hotelier, Rating, Country, Address FROM hotels")
 	if err != nil {
 		return nil, err
 	}
@@ -43,6 +43,21 @@ func (s *Storage) GetHotels() ([]Hotel, error) {
 }
 
 func (s *Storage) AddHotel(hotel Hotel) error {
-	_, err := s.db.Exec("INSERT INTO hotels (name, city) VALUES ($1, $2)", hotel.Name, hotel.City)
+	_, err := s.db.Exec(
+		"INSERT INTO hotels (
+			ID, 
+			Name,
+			Hotelier, 
+			Rating, 
+			Country, 
+			Address
+		) VALUES ($1, $2, $3, $4, $5, $6)",
+	hotel.ID,
+	hotel.Name,
+	hotel.Hotelier,
+	hotel.Rating,
+	hotel.Country,
+	hotel.Address
+)
 	return err
 }
