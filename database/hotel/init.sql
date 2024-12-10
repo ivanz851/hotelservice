@@ -2,7 +2,17 @@
 CREATE TABLE IF NOT EXISTS hotels (
     id SERIAL PRIMARY KEY, -- Уникальный идентификатор отеля
 
-    name TEXT NOT NULL DEFAULT 'Hotel' -- Название отеля
+    name TEXT NOT NULL DEFAULT 'Metropol', -- Название отеля
+
+    city TEXT NOT NULL DEFAULT 'Moscow', -- Город нахождения отеля
+
+    hotelier_id INT NOT NULL, -- Идентификатор владельца отеля
+
+    rating INT NOT NULL DEFAULT 5, -- Рейтинг отеля (количество звезд)
+
+    country TEXT NOT NULL DEFAULT 'Russia', -- Страна нахождения отеля
+
+    address TEXT NOT NULL DEFAULT 'Teatral''nyy Proyezd, 2, 109012' -- Адрес отеля
 );
 
 -- Таблица RoomsCategories: хранит информацию о категориях номеров в отелях.
