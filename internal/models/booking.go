@@ -1,13 +1,11 @@
 package models
 
 type Booking struct {
-	ID                     int    `json:"bookingId"`
-	ClientID               int    `json:"clientId"`
-	HotelID                int    `json:"hotelId"`
-	RoomID                 int    `json:"roomId"`
-	RoomCategory           string `json:"roomCategory"`
-	Price                  int    `json:"price"`
-	BookingStartTimestamp  string `json:"bookingStartTimestamp"`
-	BookingFinishTimestamp string `json:"bookingFinishTimestamp"`
-	Date                   string `json:"creationTimestamp"`
+	ID                     int    `json:"id"`
+	ClientID               int    `json:"client_id"`
+	HotelID                int    `json:"hotel_id"`
+	RoomID                 int    `json:"room_id"`
+	BookingStartTimestamp  string `json:"booking_start_timestamp"`
+	BookingFinishTimestamp string `json:"booking_finish_timestamp"`
+	Date                   string `json:"creation_timestamp"`
 }
