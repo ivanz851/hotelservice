@@ -1,11 +1,10 @@
-CREATE TABLE Bookings  (
-    bookingId SERIAL PRIMARY KEY,
-    clientId INT NOT NULL DEFAULT 0,
-    hotelId INT NOT NULL DEFAULT 0,
-    roomId INT NOT NULL DEFAULT 0,
-    roomCategory TEXT NOT NULL DEFAULT 'Standard',
-    Price  INT NOT NULL DEFAULT 1000,
-    bookingStartTimestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    bookingFinishTimestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() + INTERVAL '1 day',
-    creationTimestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+-- Таблица Bookings: хранит информацию о бронированиях.
+CREATE TABLE bookings  (
+    id SERIAL PRIMARY KEY, -- Уникальный идентификатор бронирования
+    client_id INT NOT NULL DEFAULT 0, -- Идентификатор клиента, оформившего бронирование
+    hotel_id INT NOT NULL, -- Идентификатор отеля, в котором бронируется номер
+    room_id INT NOT NULL, -- Идентификатор бронируемого номера
+    booking_start_timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(), -- Временная метка заселения клиента
+    booking_finish_timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() + INTERVAL '1 day', -- Временная метка выселения клиента
+    creation_timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() -- Временная метка бронирования
 );
