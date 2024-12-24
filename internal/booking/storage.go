@@ -3,8 +3,9 @@ package booking
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 	"hotelservice/internal/models"
+
+	_ "github.com/lib/pq"
 )
 
 type Storage struct {
@@ -21,18 +22,6 @@ func NewStorage(conn string) *Storage {
 		panic("Unable to connect to the database: " + err.Error())
 	}
 
-	return &Storage{db: db}
-}
-
-type Storage struct {
-	db *sql.DB
-}
-
-func NewStorage(conn string) *Storage {
-	db, err := sql.Open("postgres", conn)
-	if err != nil {
-		panic("Connection Failed: " + err.Error())
-	}
 	return &Storage{db: db}
 }
 
@@ -53,7 +42,6 @@ func (s *Storage) GetBookings() ([]models.Booking, error) {
 	}
 	return bookings, nil
 }
-
 
 func (s *Storage) GetBooking(bookingID int) (*models.Booking, error) {
 	row := s.db.QueryRow("SELECT id, hotel_id, client_id FROM Bookings WHERE id = $1", bookingID)
