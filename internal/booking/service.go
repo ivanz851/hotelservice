@@ -6,13 +6,12 @@ import (
 	pb "hotelservice/proto/booking"
 	"log"
 
-	"github.com/jmoiron/sqlx"
 	kafka "github.com/segmentio/kafka-go"
 )
 
 type Server struct {
 	pb.UnimplementedBookingServiceServer
-	DB *sqlx.DB
+	storage *Storage
 }
 
 func newKafkaWriter(kafkaURL, topic string) *kafka.Writer {
@@ -48,10 +47,41 @@ func (s *Server) CreateBooking(ctx context.Context, req *pb.CreateBookingRequest
 func (s *Server) GetBooking(ctx context.Context, req *pb.GetBookingRequest) (*pb.GetBookingResponse, error) {
 	log.Printf("Getting booking information for booking_id: %d", req.BookingId)
 
+	booking, err := s.storage.GetBooking(int(req.BookingId))
+	if err != nil {
+		log.Printf("Error fetching booking: %v", err)
+		return nil, err
+	}
 	return &pb.GetBookingResponse{
-		BookingId: req.BookingId,
-		HotelId:   1,
-		ClientId:  123,
-		Status:    "confirmed",
+		Booking: &pb.Booking{
+			BookingId: int32(booking.ID),
+			HotelId:   int32(booking.HotelID),
+			ClientId:  int32(booking.ClientID),
+			Status:    "confirmed",
+		},
+	}, nil
+}
+
+func (s *Server) GetBookings(ctx context.Context, req *pb.GetBookingsRequest) (*pb.GetBookingsResponse, error) {
+	log.Println("Getting all bookings")
+
+	bookings, err := s.storage.GetBookings()
+	if err != nil {
+		log.Printf("Error fetching bookings: %v", err)
+		return nil, fmt.Errorf("error fetching bookings")
+	}
+
+	var bookingList []*pb.Booking
+	for _, booking := range bookings {
+		bookingList = append(bookingList, &pb.Booking{
+			BookingId: int32(booking.ID),
+			HotelId:   int32(booking.HotelID),
+			ClientId:  int32(booking.ClientID),
+			Status:    booking.Status,
+		})
+	}
+
+	return &pb.GetBookingsResponse{
+		Bookings: bookingList,
 	}, nil
 }

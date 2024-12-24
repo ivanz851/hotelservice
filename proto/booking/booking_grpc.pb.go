@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.28.3
-// source: proto/booking.proto
+// source: booking.proto
 
 package booking
 
@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	BookingService_CreateBooking_FullMethodName = "/booking.BookingService/CreateBooking"
 	BookingService_GetBooking_FullMethodName    = "/booking.BookingService/GetBooking"
+	BookingService_GetBookings_FullMethodName   = "/booking.BookingService/GetBookings"
 )
 
 // BookingServiceClient is the client API for BookingService service.
@@ -29,6 +30,7 @@ const (
 type BookingServiceClient interface {
 	CreateBooking(ctx context.Context, in *CreateBookingRequest, opts ...grpc.CallOption) (*CreateBookingResponse, error)
 	GetBooking(ctx context.Context, in *GetBookingRequest, opts ...grpc.CallOption) (*GetBookingResponse, error)
+	GetBookings(ctx context.Context, in *GetBookingsRequest, opts ...grpc.CallOption) (*GetBookingsResponse, error)
 }
 
 type bookingServiceClient struct {
@@ -59,12 +61,23 @@ func (c *bookingServiceClient) GetBooking(ctx context.Context, in *GetBookingReq
 	return out, nil
 }
 
+func (c *bookingServiceClient) GetBookings(ctx context.Context, in *GetBookingsRequest, opts ...grpc.CallOption) (*GetBookingsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetBookingsResponse)
+	err := c.cc.Invoke(ctx, BookingService_GetBookings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BookingServiceServer is the server API for BookingService service.
 // All implementations must embed UnimplementedBookingServiceServer
 // for forward compatibility.
 type BookingServiceServer interface {
 	CreateBooking(context.Context, *CreateBookingRequest) (*CreateBookingResponse, error)
 	GetBooking(context.Context, *GetBookingRequest) (*GetBookingResponse, error)
+	GetBookings(context.Context, *GetBookingsRequest) (*GetBookingsResponse, error)
 	mustEmbedUnimplementedBookingServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedBookingServiceServer) CreateBooking(context.Context, *CreateB
 }
 func (UnimplementedBookingServiceServer) GetBooking(context.Context, *GetBookingRequest) (*GetBookingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBooking not implemented")
+}
+func (UnimplementedBookingServiceServer) GetBookings(context.Context, *GetBookingsRequest) (*GetBookingsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBookings not implemented")
 }
 func (UnimplementedBookingServiceServer) mustEmbedUnimplementedBookingServiceServer() {}
 func (UnimplementedBookingServiceServer) testEmbeddedByValue()                        {}
@@ -138,6 +154,24 @@ func _BookingService_GetBooking_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BookingService_GetBookings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBookingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BookingServiceServer).GetBookings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BookingService_GetBookings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BookingServiceServer).GetBookings(ctx, req.(*GetBookingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BookingService_ServiceDesc is the grpc.ServiceDesc for BookingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -153,7 +187,11 @@ var BookingService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetBooking",
 			Handler:    _BookingService_GetBooking_Handler,
 		},
+		{
+			MethodName: "GetBookings",
+			Handler:    _BookingService_GetBookings_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/booking.proto",
+	Metadata: "booking.proto",
 }

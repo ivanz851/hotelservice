@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.28.3
-// source: proto/hotel.proto
+// source: hotel.proto
 
 package hotel
 
@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	HotelService_CreateHotel_FullMethodName = "/hotel.HotelService/CreateHotel"
 	HotelService_GetHotel_FullMethodName    = "/hotel.HotelService/GetHotel"
+	HotelService_GetHotels_FullMethodName   = "/hotel.HotelService/GetHotels"
 )
 
 // HotelServiceClient is the client API for HotelService service.
@@ -29,6 +30,7 @@ const (
 type HotelServiceClient interface {
 	CreateHotel(ctx context.Context, in *CreateHotelRequest, opts ...grpc.CallOption) (*CreateHotelResponse, error)
 	GetHotel(ctx context.Context, in *GetHotelRequest, opts ...grpc.CallOption) (*GetHotelResponse, error)
+	GetHotels(ctx context.Context, in *GetHotelsRequest, opts ...grpc.CallOption) (*GetHotelsResponse, error)
 }
 
 type hotelServiceClient struct {
@@ -59,12 +61,23 @@ func (c *hotelServiceClient) GetHotel(ctx context.Context, in *GetHotelRequest, 
 	return out, nil
 }
 
+func (c *hotelServiceClient) GetHotels(ctx context.Context, in *GetHotelsRequest, opts ...grpc.CallOption) (*GetHotelsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetHotelsResponse)
+	err := c.cc.Invoke(ctx, HotelService_GetHotels_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HotelServiceServer is the server API for HotelService service.
 // All implementations must embed UnimplementedHotelServiceServer
 // for forward compatibility.
 type HotelServiceServer interface {
 	CreateHotel(context.Context, *CreateHotelRequest) (*CreateHotelResponse, error)
 	GetHotel(context.Context, *GetHotelRequest) (*GetHotelResponse, error)
+	GetHotels(context.Context, *GetHotelsRequest) (*GetHotelsResponse, error)
 	mustEmbedUnimplementedHotelServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedHotelServiceServer) CreateHotel(context.Context, *CreateHotel
 }
 func (UnimplementedHotelServiceServer) GetHotel(context.Context, *GetHotelRequest) (*GetHotelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHotel not implemented")
+}
+func (UnimplementedHotelServiceServer) GetHotels(context.Context, *GetHotelsRequest) (*GetHotelsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetHotels not implemented")
 }
 func (UnimplementedHotelServiceServer) mustEmbedUnimplementedHotelServiceServer() {}
 func (UnimplementedHotelServiceServer) testEmbeddedByValue()                      {}
@@ -138,6 +154,24 @@ func _HotelService_GetHotel_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _HotelService_GetHotels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetHotelsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HotelServiceServer).GetHotels(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HotelService_GetHotels_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HotelServiceServer).GetHotels(ctx, req.(*GetHotelsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // HotelService_ServiceDesc is the grpc.ServiceDesc for HotelService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -153,7 +187,11 @@ var HotelService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetHotel",
 			Handler:    _HotelService_GetHotel_Handler,
 		},
+		{
+			MethodName: "GetHotels",
+			Handler:    _HotelService_GetHotels_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/hotel.proto",
+	Metadata: "hotel.proto",
 }

@@ -2,6 +2,8 @@ package hotel
 
 import (
 	"context"
+	"fmt"
+	"hotelservice/internal/models"
 	pb "hotelservice/proto/hotel"
 	"log"
 )
@@ -13,7 +15,7 @@ type Server struct {
 
 func (s *Server) CreateHotel(ctx context.Context, req *pb.CreateHotelRequest) (*pb.CreateHotelResponse, error) {
 	log.Printf("Creating hotel: %s at %s with price: %.2f", req.Name, req.Address, req.PricePerNight)
-	s.storage.AddHotel(Hotel{Name: req.Name, City: req.Address})
+	s.storage.AddHotel(models.Hotel{Name: req.Name, Address: req.Address})
 	return &pb.CreateHotelResponse{
 		Message: "Hotel created successfully",
 		HotelId: 1,
@@ -22,10 +24,46 @@ func (s *Server) CreateHotel(ctx context.Context, req *pb.CreateHotelRequest) (*
 
 func (s *Server) GetHotel(ctx context.Context, req *pb.GetHotelRequest) (*pb.GetHotelResponse, error) {
 	log.Printf("Getting hotel information for hotel_id:d", req.HotelId)
+	hotel, err := s.storage.GetHotel(int(req.HotelId))
+	if err != nil {
+		log.Printf("error getting hotel information for hotel_id:", req.HotelId)
+		return nil, fmt.Errorf("no hotels found")
+	}
+
+	var foundHotel *pb.Hotel
+
+	foundHotel = &pb.Hotel{
+		HotelId:       int64(hotel.ID),
+		Name:          hotel.Name,
+		Address:       hotel.Address,
+		PricePerNight: 100.00,
+	}
+
 	return &pb.GetHotelResponse{
-		HotelId:       req.HotelId,
-		Name:          "Sample Hotel",
-		Address:       "123 Sample St",
-		PricePerNight: 100.0,
+		Hotel: foundHotel,
+	}, nil
+}
+
+func (s *Server) GetHotels(ctx context.Context, req *pb.GetHotelsRequest) (*pb.GetHotelsResponse, error) {
+	log.Printf("Getting hotel information for hotel_id:d")
+	hotels, err := s.storage.GetHotels()
+	if err != nil {
+		log.Printf("error getting hotel information for hotel_id:")
+		return nil, fmt.Errorf("no hotels found")
+	}
+
+	var foundHotels []*pb.Hotel
+	for _, hotel := range hotels {
+
+		foundHotels = append(foundHotels, &pb.Hotel{
+			HotelId:       int64(hotel.ID),
+			Name:          hotel.Name,
+			Address:       hotel.Address,
+			PricePerNight: 100.00,
+		})
+	}
+
+	return &pb.GetHotelsResponse{
+		Hotels: foundHotels,
 	}, nil
 }

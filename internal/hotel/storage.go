@@ -2,22 +2,13 @@ package hotel
 
 import (
 	"database/sql"
-
+	"fmt"
 	_ "github.com/lib/pq"
+	"hotelservice/internal/models"
 )
 
 type Storage struct {
 	db *sql.DB
-}
-
-type Hotel struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	City     string `json:"city"`
-	Hotelier int    `json:"hotelier"`
-	Rating   int    `json:"rating"`
-	Country  string `json:"country"`
-	Address  string `json:"address"`
 }
 
 func NewStorage(conn string) *Storage {
@@ -28,17 +19,17 @@ func NewStorage(conn string) *Storage {
 	return &Storage{db: db}
 }
 
-func (s *Storage) GetHotels() ([]Hotel, error) {
-	rows, err := s.db.Query("SELECT ID, Name, Hotelier, Rating, Country, Address FROM hotels")
+func (s *Storage) GetHotels() ([]models.Hotel, error) {
+	rows, err := s.db.Query("SELECT id, name, address FROM hotels")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var hotels []Hotel
+	var hotels []models.Hotel
 	for rows.Next() {
-		var hotel Hotel
-		if err := rows.Scan(&hotel.ID, &hotel.Name, &hotel.City); err != nil {
+		var hotel models.Hotel
+		if err := rows.Scan(&hotel.ID, &hotel.Name); err != nil {
 			return nil, err
 		}
 		hotels = append(hotels, hotel)
@@ -46,21 +37,29 @@ func (s *Storage) GetHotels() ([]Hotel, error) {
 	return hotels, nil
 }
 
-func (s *Storage) AddHotel(hotel Hotel) error {
+func (s *Storage) GetHotel(hotel_id int) (models.Hotel, error) {
+	rows := s.db.QueryRow("SELECT id, name, address FROM hotels where id = $1", hotel_id)
+
+	var hotel models.Hotel
+
+	if err := rows.Scan(&hotel.ID, &hotel.Name, &hotel.Address); err != nil {
+		if err != nil {
+			return models.Hotel{}, fmt.Errorf("no hotels found")
+		}
+		return models.Hotel{}, err
+	}
+	return hotel, nil
+}
+
+func (s *Storage) AddHotel(hotel models.Hotel) error {
 	_, err := s.db.Exec(
 		`INSERT INTO hotels (
-			ID, 
-			Name,
-			Hotelier, 
-			Rating, 
-			Country, 
-			Address
-		) VALUES ($1, $2, $3, $4, $5, $6)`,
+			id,
+			name,
+			address
+		) VALUES ($1, $2, $3)`,
 		hotel.ID,
 		hotel.Name,
-		hotel.Hotelier,
-		hotel.Rating,
-		hotel.Country,
 		hotel.Address,
 	)
 	return err
