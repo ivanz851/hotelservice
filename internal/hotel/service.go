@@ -2,6 +2,7 @@ package hotel
 
 import (
 	"context"
+	"hotelservice/internal/models"
 	pb "hotelservice/proto/hotel"
 	"log"
 )
@@ -13,7 +14,7 @@ type Server struct {
 
 func (s *Server) CreateHotel(ctx context.Context, req *pb.CreateHotelRequest) (*pb.CreateHotelResponse, error) {
 	log.Printf("Creating hotel: %s at %s with price: %.2f", req.Name, req.Address, req.PricePerNight)
-	s.storage.AddHotel(Hotel{Name: req.Name, City: req.Address})
+	s.storage.AddHotel(models.Hotel{Name: req.Name, Address: req.Address})
 	return &pb.CreateHotelResponse{
 		Message: "Hotel created successfully",
 		HotelId: 1,

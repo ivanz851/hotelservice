@@ -4,20 +4,11 @@ import (
 	"database/sql"
 
 	_ "github.com/lib/pq"
+	"hotelservice/internal/models"
 )
 
 type Storage struct {
 	db *sql.DB
-}
-
-type Hotel struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	City     string `json:"city"`
-	Hotelier int    `json:"hotelier"`
-	Rating   int    `json:"rating"`
-	Country  string `json:"country"`
-	Address  string `json:"address"`
 }
 
 func NewStorage(conn string) *Storage {
@@ -28,17 +19,17 @@ func NewStorage(conn string) *Storage {
 	return &Storage{db: db}
 }
 
-func (s *Storage) GetHotels() ([]Hotel, error) {
-	rows, err := s.db.Query("SELECT id, name, city, hotelier_id, rating, country, address FROM hotels")
+func (s *Storage) GetHotels() ([]models.Hotel, error) {
+	rows, err := s.db.Query("SELECT id, name, address, price_per_night FROM hotels")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var hotels []Hotel
+	var hotels []models.Hotel
 	for rows.Next() {
-		var hotel Hotel
-		if err := rows.Scan(&hotel.ID, &hotel.Name, &hotel.City); err != nil {
+		var hotel models.Hotel
+		if err := rows.Scan(&hotel.ID, &hotel.Name); err != nil {
 			return nil, err
 		}
 		hotels = append(hotels, hotel)
@@ -46,24 +37,18 @@ func (s *Storage) GetHotels() ([]Hotel, error) {
 	return hotels, nil
 }
 
-func (s *Storage) AddHotel(hotel Hotel) error {
+func (s *Storage) AddHotel(hotel models.Hotel) error {
 	_, err := s.db.Exec(
 		`INSERT INTO hotels (
 			id,
 			name,
-            city,
-			hotelier_id,
-			rating,
-			country,
-			address
-		) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+			address,
+            price_per_night
+		) VALUES ($1, $2, $3, $4)`,
 		hotel.ID,
 		hotel.Name,
-		hotel.City,
-		hotel.Hotelier,
-		hotel.Rating,
-		hotel.Country,
 		hotel.Address,
+		hotel.PricePerNight,
 	)
 	return err
 }

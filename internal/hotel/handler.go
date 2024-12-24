@@ -3,6 +3,7 @@ package hotel
 import (
 	"context"
 	"encoding/json"
+	"hotelservice/internal/models"
 	pb "hotelservice/proto/hotel"
 	"net/http"
 )
@@ -29,7 +30,7 @@ func (h *Handler) GetHotels(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AddHotel(w http.ResponseWriter, r *http.Request) {
-	var hotel Hotel
+	var hotel models.Hotel
 	ctx := context.Background()
 	if err := json.NewDecoder(r.Body).Decode(&hotel); err != nil {
 		http.Error(w, "Invalid JSON input: "+err.Error(), http.StatusBadRequest)
