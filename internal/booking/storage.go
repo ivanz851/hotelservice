@@ -2,6 +2,7 @@ package booking
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/lib/pq"
 	"hotelservice/internal/models"
 )
@@ -24,16 +25,11 @@ func NewStorage(conn string) *Storage {
 }
 
 func (s *Storage) GetBookings() ([]models.Booking, error) {
-	rows, err := s.db.Query("SELECT id, hotel_id, client_id FROM bookings")
+	rows, err := s.db.Query("SELECT id, hotel_id, client_id FROM Bookings")
 	if err != nil {
 		return nil, err
 	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-
-		}
-	}(rows)
+	defer rows.Close()
 
 	var bookings []models.Booking
 	for rows.Next() {
@@ -46,7 +42,20 @@ func (s *Storage) GetBookings() ([]models.Booking, error) {
 	return bookings, nil
 }
 
+func (s *Storage) GetBooking(bookingID int) (*models.Booking, error) {
+	row := s.db.QueryRow("SELECT id, hotel_id, client_id FROM Bookings WHERE id = $1", bookingID)
+	var booking models.Booking
+
+	if err := row.Scan(&booking.ID, &booking.HotelID, &booking.ClientID); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("booking with ID %d not found", bookingID)
+		}
+		return nil, err
+	}
+	return &booking, nil
+}
+
 func (s *Storage) AddBooking(booking models.Booking) error {
-	_, err := s.db.Exec("INSERT INTO bookings (hotel_id, client_id, status) VALUES ($1, $2, $3)", booking.HotelID, booking.ClientID, booking.Status)
+	_, err := s.db.Exec("INSERT INTO bookings (hotel_id, client_id) VALUES ($1, $2)", booking.HotelID, booking.ClientID)
 	return err
 }

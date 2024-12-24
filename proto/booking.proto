@@ -7,6 +7,7 @@ option go_package = "./proto/booking;booking";
 service BookingService {
     rpc CreateBooking(CreateBookingRequest) returns (CreateBookingResponse);
     rpc GetBooking(GetBookingRequest) returns (GetBookingResponse);
+    rpc GetBookings(GetBookingsRequest) returns (GetBookingsResponse);
 }
 
 message CreateBookingRequest {
@@ -19,13 +20,24 @@ message CreateBookingResponse {
     int32 booking_id = 2;
 }
 
+message Booking {
+    int32 booking_id = 1;
+    int32 hotel_id = 2;
+    int32 client_id = 3;
+    string status = 4;
+}
+
+message GetBookingsRequest {
+}
+
+message GetBookingsResponse {
+    repeated Booking bookings = 1;
+}
+
 message GetBookingRequest {
     int32 booking_id = 1;
 }
 
 message GetBookingResponse {
-    int32 booking_id = 1;
-    int32 hotel_id = 2;
-    int32 client_id = 3;
-    string status = 4;
+    Booking booking = 1;
 }

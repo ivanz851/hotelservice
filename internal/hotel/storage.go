@@ -2,9 +2,7 @@ package hotel
 
 import (
 	"database/sql"
-	"errors"
-	"log"
-
+	"fmt"
 	_ "github.com/lib/pq"
 	"hotelservice/internal/models"
 )
@@ -22,16 +20,11 @@ func NewStorage(conn string) *Storage {
 }
 
 func (s *Storage) GetHotels() ([]models.Hotel, error) {
-	rows, err := s.db.Query("SELECT id, name, address, price_per_night FROM hotels")
+	rows, err := s.db.Query("SELECT id, name, address FROM hotels")
 	if err != nil {
 		return nil, err
 	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-
-		}
-	}(rows)
+	defer rows.Close()
 
 	var hotels []models.Hotel
 	for rows.Next() {
@@ -44,33 +37,30 @@ func (s *Storage) GetHotels() ([]models.Hotel, error) {
 	return hotels, nil
 }
 
+func (s *Storage) GetHotel(hotel_id int) (models.Hotel, error) {
+	rows := s.db.QueryRow("SELECT id, name, address FROM hotels where id = $1", hotel_id)
+
+	var hotel models.Hotel
+
+	if err := rows.Scan(&hotel.ID, &hotel.Name, &hotel.Address); err != nil {
+		if err != nil {
+			return models.Hotel{}, fmt.Errorf("no hotels found")
+		}
+		return models.Hotel{}, err
+	}
+	return hotel, nil
+}
+
 func (s *Storage) AddHotel(hotel models.Hotel) error {
 	_, err := s.db.Exec(
 		`INSERT INTO hotels (
 			id,
 			name,
-			address,
-            price_per_night
-		) VALUES ($1, $2, $3, $4)`,
+			address
+		) VALUES ($1, $2, $3)`,
 		hotel.ID,
 		hotel.Name,
 		hotel.Address,
-		hotel.PricePerNight,
 	)
 	return err
-}
-
-func (s *Storage) GetHotelById(id int32) (models.Hotel, error) {
-	var hotel models.Hotel
-	err := s.db.QueryRow("SELECT id, name, address, price_per_night FROM hotels WHERE id = $1", id).
-		Scan(&hotel.ID, &hotel.Name, &hotel.Address, &hotel.PricePerNight)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			log.Printf("Hotel not found with ID: %d", id)
-			return hotel, nil
-		}
-		log.Printf("Error fetching hotel by ID: %v", err)
-		return hotel, err
-	}
-	return hotel, nil
 }
