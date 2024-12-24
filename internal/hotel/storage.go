@@ -2,6 +2,8 @@ package hotel
 
 import (
 	"database/sql"
+	"errors"
+	"log"
 
 	_ "github.com/lib/pq"
 	"hotelservice/internal/models"
@@ -24,7 +26,12 @@ func (s *Storage) GetHotels() ([]models.Hotel, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+
+		}
+	}(rows)
 
 	var hotels []models.Hotel
 	for rows.Next() {
@@ -51,4 +58,19 @@ func (s *Storage) AddHotel(hotel models.Hotel) error {
 		hotel.PricePerNight,
 	)
 	return err
+}
+
+func (s *Storage) GetHotelById(id int32) (models.Hotel, error) {
+	var hotel models.Hotel
+	err := s.db.QueryRow("SELECT id, name, address, price_per_night FROM hotels WHERE id = $1", id).
+		Scan(&hotel.ID, &hotel.Name, &hotel.Address, &hotel.PricePerNight)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			log.Printf("Hotel not found with ID: %d", id)
+			return hotel, nil
+		}
+		log.Printf("Error fetching hotel by ID: %v", err)
+		return hotel, err
+	}
+	return hotel, nil
 }

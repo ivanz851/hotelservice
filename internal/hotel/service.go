@@ -23,10 +23,17 @@ func (s *Server) CreateHotel(ctx context.Context, req *pb.CreateHotelRequest) (*
 
 func (s *Server) GetHotel(ctx context.Context, req *pb.GetHotelRequest) (*pb.GetHotelResponse, error) {
 	log.Printf("Getting hotel information for hotel_id:d", req.HotelId)
+
+	hotel, err := s.storage.GetHotelById(req.HotelId)
+	if err != nil {
+		log.Printf("Error fetching hotel: %v", err)
+		return nil, err
+	}
+
 	return &pb.GetHotelResponse{
-		HotelId:       req.HotelId,
-		Name:          "Sample Hotel",
-		Address:       "123 Sample St",
-		PricePerNight: 100.0,
+		HotelId:       hotel.ID,
+		Name:          hotel.Name,
+		Address:       hotel.Address,
+		PricePerNight: hotel.PricePerNight,
 	}, nil
 }

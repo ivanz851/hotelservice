@@ -48,10 +48,12 @@ func (s *Server) CreateBooking(ctx context.Context, req *pb.CreateBookingRequest
 func (s *Server) GetBooking(ctx context.Context, req *pb.GetBookingRequest) (*pb.GetBookingResponse, error) {
 	log.Printf("Getting booking information for booking_id: %d", req.BookingId)
 
-	return &pb.GetBookingResponse{
-		BookingId: req.BookingId,
-		HotelId:   1,
-		ClientId:  123,
-		Status:    "confirmed",
-	}, nil
+	var booking pb.GetBookingResponse
+	err := s.DB.Get(&booking, "SELECT id, client_id, hotel_id, status FROM bookings WHERE id = $1", req.BookingId)
+	if err != nil {
+		log.Printf("Error fetching booking by ID: %v", err)
+		return nil, fmt.Errorf("Error fetching booking: %v", err)
+	}
+
+	return &booking, nil
 }
