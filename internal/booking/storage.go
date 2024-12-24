@@ -24,6 +24,18 @@ func NewStorage(conn string) *Storage {
 	return &Storage{db: db}
 }
 
+type Storage struct {
+	db *sql.DB
+}
+
+func NewStorage(conn string) *Storage {
+	db, err := sql.Open("postgres", conn)
+	if err != nil {
+		panic("Connection Failed: " + err.Error())
+	}
+	return &Storage{db: db}
+}
+
 func (s *Storage) GetBookings() ([]models.Booking, error) {
 	rows, err := s.db.Query("SELECT id, hotel_id, client_id FROM Bookings")
 	if err != nil {
@@ -41,6 +53,7 @@ func (s *Storage) GetBookings() ([]models.Booking, error) {
 	}
 	return bookings, nil
 }
+
 
 func (s *Storage) GetBooking(bookingID int) (*models.Booking, error) {
 	row := s.db.QueryRow("SELECT id, hotel_id, client_id FROM Bookings WHERE id = $1", bookingID)

@@ -1,0 +1,141 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Docker Services Monitoring",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "CPU Usage (All Services)",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total[5m])",
+            "legendFormat": "{{container_label_com_docker_swarm_service_name}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Memory Usage (All Services)",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes",
+            "legendFormat": "{{container_label_com_docker_swarm_service_name}}",
+            "refId": "B"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Network I/O (All Services)",
+        "targets": [
+          {
+            "expr": "rate(container_network_receive_bytes_total[5m])",
+            "legendFormat": "Receive: {{container_label_com_docker_swarm_service_name}}",
+            "refId": "C"
+          },
+          {
+            "expr": "rate(container_network_transmit_bytes_total[5m])",
+            "legendFormat": "Transmit: {{container_label_com_docker_swarm_service_name}}",
+            "refId": "D"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "PostgreSQL Active Connections",
+        "targets": [
+          {
+            "expr": "pg_stat_activity_count",
+            "legendFormat": "DB: {{datname}}",
+            "refId": "E"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "PostgreSQL Cache Hit Ratio",
+        "targets": [
+          {
+            "expr": "(pg_stat_database_blks_hit::float / (pg_stat_database_blks_hit + pg_stat_database_blks_read))",
+            "legendFormat": "DB: {{datname}}",
+            "refId": "F"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Kafka Messages Processed",
+        "targets": [
+          {
+            "expr": "rate(kafka_server_brokertopicmetrics_messagesinpersec_count[5m])",
+            "legendFormat": "Topic: {{topic}}",
+            "refId": "G"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Kafka Under-Replicated Partitions",
+        "targets": [
+          {
+            "expr": "kafka_cluster_partition_underreplicated",
+            "legendFormat": "Broker: {{instance}}",
+            "refId": "H"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Service Response Time (Booking and Hotel)",
+        "targets": [
+          {
+            "expr": "rate(http_request_duration_seconds_sum{job='booking-svc'}[5m]) / rate(http_request_duration_seconds_count{job='booking-svc'}[5m])",
+            "legendFormat": "Booking Service",
+            "refId": "I"
+          },
+          {
+            "expr": "rate(http_request_duration_seconds_sum{job='hotel-svc'}[5m]) / rate(http_request_duration_seconds_count{job='hotel-svc'}[5m])",
+            "legendFormat": "Hotel Service",
+            "refId": "J"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Jaeger Traces",
+        "targets": [
+          {
+            "expr": "rate(jaeger_traces_created_total[5m])",
+            "legendFormat": "Traces",
+            "refId": "K"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Notification Service Errors",
+        "targets": [
+          {
+            "expr": "rate(notification_service_error_total[5m])",
+            "legendFormat": "Notification Errors",
+            "refId": "L"
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "type": "query",
+          "datasource": "Prometheus",
+          "refresh": 1,
+          "name": "service",
+          "label": "Service",
+          "query": "label_values(container_label_com_docker_swarm_service_name)"
+        }
+      ]
+    }
+  },
+  "overwrite": true
+}

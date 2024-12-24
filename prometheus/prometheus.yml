@@ -2,6 +2,7 @@ global:
   scrape_interval: 15s
   scrape_timeout: 10s
   evaluation_interval: 15s
+
 alerting:
   alertmanagers:
   - static_configs:
@@ -9,13 +10,32 @@ alerting:
     scheme: http
     timeout: 10s
     api_version: v1
+
 scrape_configs:
-- job_name: prometheus
-  honor_timestamps: true
-  scrape_interval: 15s
-  scrape_timeout: 10s
-  metrics_path: /metrics
-  scheme: http
-  static_configs:
-  - targets:
-    - localhost:9090
+  - job_name: docker-services
+    static_config:
+      - targets:
+        - 'postgres-booking:${DB_BOOKING_PORT}'
+        - 'postgres-hotel:${DB_HOTEL_PORT}'
+        - 'booking-svc:${BOOKING_CONN_PORT}'
+        - 'hotel-svc:${HOTEL_PORT}'
+        - 'kafka:${KAFKA_PORT}'
+        - 'zookeeper:${ZOOKEEPER_CLIENT_PORT}'
+      labels:
+        service: 'docker-services'
+
+  - job_name: jaeger-all-in-one
+    static_config:
+      - targets:
+        - 'localhost:14268'
+        - 'localhost:14250'
+
+  - job_name: prometheus
+    honor_timestamps: true
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+    - targets:
+      - localhost:9090

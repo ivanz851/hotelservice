@@ -38,6 +38,22 @@ services:
     environment:
       - DATABASE_URL=${HOTEL_DB_URL}
 
+  postgres-exporter-booking:
+    image: prometheuscommunity/postgres-exporter
+    container_name: booking-postgres-exporter
+    ports:
+      - "${BOOKING_EXPORTER}:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${DB_BOOKING_USER}:${DB_BOOKING_PASSWORD}@postgres-booking:5431/${DB_BOOKING_NAME}"
+
+  postgres-exporter-hotel:
+    image: prometheuscommunity/postrges-exporter
+    container_name: hotel-postrges-exporter
+    ports:
+      - "${HOTEL_EXPORTER}:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${DB_HOTEL_USER}:${DB_HOTEL_PASSWORD}@ppostgres-hotel:5432/${DB_HOTEL_NAME}"
+    
   notification-svc:
     build:
       context: .
@@ -83,7 +99,7 @@ services:
   zookeeper:
     image: wurstmeister/zookeeper:latest
     ports:
-      - "2181:2181"
+      - "${ZOOKEEPER_CLIENT_PORT}:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
   kafka:
@@ -93,7 +109,7 @@ services:
     restart: always
     image: wurstmeister/kafka:latest
     ports:
-      - "9094:9094"
+      - "${KAFKA_PORT}:9094"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
