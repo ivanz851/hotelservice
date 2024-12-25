@@ -3,57 +3,79 @@ version: "3.8"
 services:
   postgres-booking:
     image: postgres:13
+    container_name: postgres-booking
     environment:
       POSTGRES_DB: ${DB_BOOKING_NAME}
       POSTGRES_USER: ${DB_BOOKING_USER}
       POSTGRES_PASSWORD: ${DB_BOOKING_PASSWORD}
     ports:
-      - "${DB_BOOKING_PORT}:5432"
+      - "${DB_BOOKING_PORT}:5431"
+    volumes:
+      - ./database/booking:/docker-entrypoint-initdb.d
 
   postgres-hotel:
     image: postgres:13
+    container_name: postgres-hotel
     environment:
       POSTGRES_DB: ${DB_HOTEL_NAME}
       POSTGRES_USER: ${DB_HOTEL_USER}
       POSTGRES_PASSWORD: ${DB_HOTEL_PASSWORD}
     ports:
       - "${DB_HOTEL_PORT}:5432"
+    volumes:
+      - ./database/hotel:/docker-entrypoint-initdb.d
+
+  migrate-booking:
+    image: migrate/migrate
+    container_name: migrate-booking
+    depends_on:
+      - postgres-booking
+    entrypoint: [
+      "sh", "-c",
+      "migrate -database postgres://${DB_BOOKING_USER}:${DB_BOOKING_PASSWORD}@postgres-booking:5432/${DB_BOOKING_NAME}?sslmode=disable -path /migrations up"
+    ]
+    volumes:
+      - ./migrations/booking:/migrations
+
+  migrate-hotel:
+    image: migrate/migrate
+    container_name: migrate-hotel
+    depends_on:
+      - postgres-hotel
+    entrypoint: [
+      "sh", "-c",
+      "migrate -database postgres://${DB_HOTEL_USER}:${DB_HOTEL_PASSWORD}@postgres-hotel:5432/${DB_HOTEL_NAME}?sslmode=disable -path /migrations up"
+    ]
+    volumes:
+      - ./migrations/hotel:/migrations
 
   booking-svc:
     build:
       context: .
       dockerfile: cmd/booking-svc/Dockerfile
+    container_name: booking-svc
     ports:
       - "${BOOKING_PORT}:50051"
       - "${BOOKING_CONN_PORT}:8080"
     environment:
-      - DATABASE_URL=${BOOKING_DB_URL}
+      - DATABASE_URL=postgres://${DB_BOOKING_USER}:${DB_BOOKING_PASSWORD}@postgres-booking:5432/${DB_BOOKING_NAME}?sslmode=disable
+    depends_on:
+      - postgres-booking
+      - migrate-booking
 
   hotel-svc:
     build:
       context: .
       dockerfile: cmd/hotel-svc/Dockerfile
+    container_name: hotel-svc
     ports:
       - "${HOTEL_PORT}:50052"
     environment:
-      - DATABASE_URL=${HOTEL_DB_URL}
+      - DATABASE_URL=postgres://${DB_HOTEL_USER}:${DB_HOTEL_PASSWORD}@postgres-hotel:5432/${DB_HOTEL_NAME}?sslmode=disable
+    depends_on:
+      - postgres-hotel
+      - migrate-hotel
 
-  postgres-exporter-booking:
-    image: prometheuscommunity/postgres-exporter
-    container_name: booking-postgres-exporter
-    ports:
-      - "${BOOKING_EXPORTER}:9187"
-    environment:
-      DATA_SOURCE_NAME: "postgresql://${DB_BOOKING_USER}:${DB_BOOKING_PASSWORD}@postgres-booking:5431/${DB_BOOKING_NAME}"
-
-  postgres-exporter-hotel:
-    image: prometheuscommunity/postgres-exporter
-    container_name: hotel-postgres-exporter
-    ports:
-      - "${HOTEL_EXPORTER}:9187"
-    environment:
-      DATA_SOURCE_NAME: "postgresql://${DB_HOTEL_USER}:${DB_HOTEL_PASSWORD}@ppostgres-hotel:5432/${DB_HOTEL_NAME}"
-    
   notification-svc:
     build:
       context: .
@@ -63,6 +85,29 @@ services:
       - kafka
     environment:
       - KAFKA_BROKER=kafka:9092
+
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "${ZOOKEEPER_CLIENT_PORT}:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    depends_on:
+      - zookeeper
+    container_name: kafka
+    restart: always
+    image: wurstmeister/kafka:latest
+    ports:
+      - "${KAFKA_PORT}:9094"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,OUTSIDE://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
 
   prometheus:
     image: prom/prometheus:v2.43.0
@@ -83,7 +128,7 @@ services:
       - "${GRAFANA_PORT}:3000"
     restart: unless-stopped
     environment:
-      - GF_SECURITY_ADMIN_USER=${ADMIN_USER} 
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD}
     volumes:
       - ./grafana:/etc/grafana/provisioning/datasources
@@ -93,30 +138,6 @@ services:
     restart: always
     ports:
       - "16686:16686"
-      - "14268"
-      - "14250"
 
-  zookeeper:
-    image: wurstmeister/zookeeper:latest
-    ports:
-      - "${ZOOKEEPER_CLIENT_PORT}:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-  kafka:
-    depends_on:
-      - zookeeper
-    container_name: kafka
-    restart: always
-    image: wurstmeister/kafka:latest
-    ports:
-      - "${KAFKA_PORT}:9094"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,OUTSIDE://0.0.0.0:9094
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://localhost:9094
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-    
 volumes:
   prom_data:
