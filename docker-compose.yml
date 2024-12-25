@@ -47,8 +47,8 @@ services:
       DATA_SOURCE_NAME: "postgresql://${DB_BOOKING_USER}:${DB_BOOKING_PASSWORD}@postgres-booking:5431/${DB_BOOKING_NAME}"
 
   postgres-exporter-hotel:
-    image: prometheuscommunity/postrges-exporter
-    container_name: hotel-postrges-exporter
+    image: prometheuscommunity/postgres-exporter
+    container_name: hotel-postgres-exporter
     ports:
       - "${HOTEL_EXPORTER}:9187"
     environment:
