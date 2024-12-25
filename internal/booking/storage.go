@@ -26,7 +26,7 @@ func NewStorage(conn string) *Storage {
 }
 
 func (s *Storage) GetBookings() ([]models.Booking, error) {
-	rows, err := s.db.Query("SELECT id, hotel_id, client_id FROM Bookings")
+	rows, err := s.db.Query("SELECT id, hotel_id, client_id FROM bookings")
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (s *Storage) GetBookings() ([]models.Booking, error) {
 }
 
 func (s *Storage) GetBooking(bookingID int) (*models.Booking, error) {
-	row := s.db.QueryRow("SELECT id, hotel_id, client_id FROM Bookings WHERE id = $1", bookingID)
+	row := s.db.QueryRow("SELECT id, hotel_id, client_id FROM bookings WHERE id = $1", bookingID)
 	var booking models.Booking
 
 	if err := row.Scan(&booking.ID, &booking.HotelID, &booking.ClientID); err != nil {
