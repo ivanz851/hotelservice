@@ -113,13 +113,14 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
 
   prometheus:
-    image: prom/prometheus:v2.43.0
+    build:
+      context: ./prometheus
+      dockerfile: Dockerfile
     container_name: prometheus
     ports:
-      - "${PROM_PORT}:9090"
+      - "9090:9090"
     restart: unless-stopped
     volumes:
-      - ./prometheus:/etc/prometheus
       - prom_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
