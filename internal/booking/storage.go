@@ -57,6 +57,6 @@ func (s *Storage) GetBooking(bookingID int) (*models.Booking, error) {
 }
 
 func (s *Storage) AddBooking(booking models.Booking) error {
-	_, err := s.db.Exec("INSERT INTO bookings (hotel_id, client_id) VALUES ($1, $2)", booking.HotelID, booking.ClientID)
+	_, err := s.db.Exec("INSERT INTO bookings (hotel_id, client_id, status, email) VALUES ($1, $2, $3, $4)", booking.HotelID, booking.ClientID, "confirmed", booking.Email)
 	return err
 }

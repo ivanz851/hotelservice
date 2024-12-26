@@ -10,12 +10,12 @@ import (
 
 type Server struct {
 	pb.UnimplementedHotelServiceServer
-	storage *Storage
+	Storage *Storage
 }
 
 func (s *Server) CreateHotel(ctx context.Context, req *pb.CreateHotelRequest) (*pb.CreateHotelResponse, error) {
 	log.Printf("Creating hotel: %s at %s with price: %.2f", req.Name, req.Address, req.PricePerNight)
-	s.storage.AddHotel(models.Hotel{Name: req.Name, Address: req.Address})
+	s.Storage.AddHotel(models.Hotel{Name: req.Name, Address: req.Address, PricePerNight: req.PricePerNight, Email: req.Email})
 	return &pb.CreateHotelResponse{
 		Message: "Hotel created successfully",
 		HotelId: 1,
@@ -24,7 +24,7 @@ func (s *Server) CreateHotel(ctx context.Context, req *pb.CreateHotelRequest) (*
 
 func (s *Server) GetHotel(ctx context.Context, req *pb.GetHotelRequest) (*pb.GetHotelResponse, error) {
 	log.Printf("Getting hotel information for hotel_id:d", req.HotelId)
-	hotel, err := s.storage.GetHotel(int(req.HotelId))
+	hotel, err := s.Storage.GetHotel(int(req.HotelId))
 	if err != nil {
 		log.Printf("error getting hotel information for hotel_id:", req.HotelId)
 		return nil, fmt.Errorf("no hotels found")
@@ -36,7 +36,7 @@ func (s *Server) GetHotel(ctx context.Context, req *pb.GetHotelRequest) (*pb.Get
 		HotelId:       int64(hotel.ID),
 		Name:          hotel.Name,
 		Address:       hotel.Address,
-		PricePerNight: 100.00,
+		PricePerNight: float32(hotel.PricePerNight),
 	}
 
 	return &pb.GetHotelResponse{
@@ -46,7 +46,7 @@ func (s *Server) GetHotel(ctx context.Context, req *pb.GetHotelRequest) (*pb.Get
 
 func (s *Server) GetHotels(ctx context.Context, req *pb.GetHotelsRequest) (*pb.GetHotelsResponse, error) {
 	log.Printf("Getting hotel information for hotel_id:d")
-	hotels, err := s.storage.GetHotels()
+	hotels, err := s.Storage.GetHotels()
 	if err != nil {
 		log.Printf("error getting hotel information for hotel_id:")
 		return nil, fmt.Errorf("no hotels found")

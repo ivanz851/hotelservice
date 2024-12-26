@@ -5,4 +5,5 @@ type Booking struct {
 	ClientID int    `json:"client_id"`
 	HotelID  int    `json:"hotel_id"`
 	Status   string `json:"status"`
+	Email    string `json:"email"`
 }
