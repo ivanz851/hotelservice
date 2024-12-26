@@ -54,6 +54,7 @@ services:
       context: .
       dockerfile: cmd/booking-svc/Dockerfile
     container_name: booking-svc
+    restart: always
     ports:
       - "${BOOKING_PORT}:50051"
       - "${BOOKING_CONN_PORT}:8080"
@@ -68,6 +69,7 @@ services:
       context: .
       dockerfile: cmd/hotel-svc/Dockerfile
     container_name: hotel-svc
+    restart: always
     ports:
       - "${HOTEL_PORT}:50052"
       - "${HOTEL_CONN_PORT}:8081"
