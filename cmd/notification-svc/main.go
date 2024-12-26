@@ -24,7 +24,7 @@ func sendMail(subject string, body string, to string) {
 	auth := smtp.PlainAuth(
 		"",
 		"ilya.sokurwork@gmail.com",
-		"mlionkvkzfkpgjbu",
+		"",
 		"smtp.gmail.com",
 	)
 
