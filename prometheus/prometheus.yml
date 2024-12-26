@@ -21,7 +21,7 @@ scrape_configs:
         - 'hotel-svc:${HOTEL_PORT}'
         - 'kafka:${KAFKA_PORT}'
         - 'zookeeper:${ZOOKEEPER_CLIENT_PORT}'
-      labels:
+      - labels:
         service: 'docker-services'
 
   - job_name: jaeger-all-in-one
