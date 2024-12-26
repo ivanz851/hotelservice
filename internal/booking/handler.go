@@ -3,7 +3,9 @@ package booking
 import (
 	"context"
 	"encoding/json"
+	"hotelservice/internal/models"
 	pb "hotelservice/proto/booking"
+	"log"
 	"net/http"
 )
 
@@ -16,24 +18,24 @@ func NewHandler(client pb.BookingServiceClient) *Handler {
 }
 
 func (h *Handler) GetBookings(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
-	bookings, err := h.client.GetBooking(ctx, &pb.GetBookingRequest{BookingId: 1})
+	bookings, err := h.client.GetBookings(context.Background(), &pb.GetBookingsRequest{})
 	if err != nil {
 		http.Error(w, "Error fitching bookings: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	log.Printf("Bookings: %v", bookings)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(bookings)
 }
 
 func (h *Handler) AddBooking(w http.ResponseWriter, r *http.Request) {
-	var booking Booking
+	var booking models.Booking
 	ctx := context.Background()
 	if err := json.NewDecoder(r.Body).Decode(&booking); err != nil {
 		http.Error(w, "Invalid JSON input: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	_, err := h.client.CreateBooking(ctx, &pb.CreateBookingRequest{HotelId: 1, ClientId: 1})
+	_, err := h.client.CreateBooking(ctx, &pb.CreateBookingRequest{HotelId: int32(booking.HotelID), ClientId: int32(booking.ClientID), Email: booking.Email})
 	if err != nil {
 		http.Error(w, "Error adding booking: "+err.Error(), http.StatusInternalServerError)
 		return

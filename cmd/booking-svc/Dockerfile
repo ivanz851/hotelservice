@@ -19,6 +19,6 @@ FROM alpine:latest
 
 COPY --from=builder /app/booking-service /usr/local/bin/booking-service
 
-ENV DATABASE_URL=postgres://user:password@postgres-booking:5432/booking_db?sslmode=disable
+ENV DATABASE_URL=postgres://user:password@postgres-booking:5431/booking_db?sslmode=disable
 
 CMD ["booking-service"]

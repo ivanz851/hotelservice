@@ -1,11 +1,9 @@
 package models
 
 type Hotel struct {
-	ID             int    `json:"id"`
-	Name           string `json:"name"`
-	Hotelier       int    `json:"hotelier_id"`
-	Rating         int    `json:"rating"`
-	Country        string `json:"country"`
-	Address        string `json:"address"`
+	ID            int32   `json:"id"`
+	Name          string  `json:"name"`
+	Address       string  `json:"address"`
+	PricePerNight float64 `json:"price_per_night"`
+	Email         string  `json:"email"`
 }
-

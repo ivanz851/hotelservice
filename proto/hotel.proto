@@ -8,12 +8,14 @@ option go_package = "./proto/hotel;hotel";
 service HotelService {
     rpc CreateHotel(CreateHotelRequest) returns (CreateHotelResponse);
     rpc GetHotel(GetHotelRequest) returns (GetHotelResponse);
+    rpc GetHotels(GetHotelsRequest) returns (GetHotelsResponse);
 }
 
 message CreateHotelRequest {
     string name = 1;
     string address = 2;
     double price_per_night = 3;
+    string email = 4;
 }
 
 message CreateHotelResponse {
@@ -25,9 +27,22 @@ message GetHotelRequest {
     int32 hotel_id = 1;
 }
 
-message GetHotelResponse {
-    int32 hotel_id = 1;
+message GetHotelsRequest {
+}
+
+message Hotel {
+    int64 hotel_id = 1;
     string name = 2;
     string address = 3;
-    double price_per_night = 4;
+    float price_per_night = 4;
+    string email = 5;
+}
+
+
+message GetHotelsResponse {
+    repeated Hotel hotels = 1;
+}
+
+message GetHotelResponse {
+    Hotel hotel = 1;
 }

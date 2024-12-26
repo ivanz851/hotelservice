@@ -13,13 +13,15 @@ import (
 )
 
 func main() {
+
+	storage := booking.NewStorage("postgres://user:password@postgres-booking:5432/booking_db?sslmode=disable")
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
-	bookingService := &booking.Server{}
+	bookingService := &booking.Server{Storage: storage}
 
 	pb.RegisterBookingServiceServer(grpcServer, bookingService)
 
@@ -48,5 +50,4 @@ func main() {
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-
 }
